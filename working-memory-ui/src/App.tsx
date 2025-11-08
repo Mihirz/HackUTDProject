@@ -308,7 +308,7 @@ export default function AgentWorkSessionUI() {
                   onClick={() => setPage("workflows")}
                   className="rounded-md px-3 py-1.5 text-[0.925rem] text-slate-700 hover:text-slate-900 hover:bg-slate-900/5 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/5 transition-all duration-200"
                 >
-                  Back to past workflows
+                  Back
                 </button>
               </div>
 
