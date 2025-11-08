@@ -61,7 +61,7 @@ const seedSessions = [
 const GlassCard: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ className, children }) => (
   <div
     className={classNames(
-      "relative rounded-2xl p-4 sm:p-6 lg:p-8",
+      "relative rounded-2xl p-5 sm:p-7 lg:p-9",
       "bg-white/70 backdrop-blur-md dark:bg-white/10",
       "ring-1 ring-slate-200 dark:ring-white/10 shadow-md dark:shadow-lg",
       className
@@ -160,7 +160,7 @@ export default function AgentWorkSessionUI() {
 
       {/* Top Navigation */}
       <header className="sticky top-0 z-10 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-8 py-5">
           {/* Left: Logo */}
           <button
             className="flex items-center gap-2 text-slate-900 dark:text-slate-100 transition-all duration-200 hover:scale-[1.03] hover:brightness-110"
@@ -170,7 +170,7 @@ export default function AgentWorkSessionUI() {
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-900/5 ring-1 ring-slate-200 dark:bg-white/10 dark:ring-white/15">
               <Brain className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold">Working Memory</span>
+            <span className="text-[1.15rem] font-semibold">Working Memory</span>
           </button>
 
           {/* Center: Nav items */}
@@ -282,17 +282,17 @@ export default function AgentWorkSessionUI() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 pb-24">
+      <main className="mx-auto max-w-6xl px-8 pb-28">
         {page === "about" && (
           <section>
             <GlassCard>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white/90">About Working Memory</h2>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-700 dark:text-white/85">
+              <h2 className="text-[1.35rem] font-semibold text-slate-900 dark:text-white/90">About Working Memory</h2>
+              <ol className="mt-3 list-decimal space-y-2 pl-5 text-[0.925rem] text-slate-700 dark:text-white/85">
                 <li>Click <span className="font-semibold">Start</span> in the top-right to begin a focused session.</li>
                 <li>Work as usual. The timer keeps running; click <span className="font-semibold">Stop</span> when you’re done.</li>
                 <li>Review your saved sessions on the <span className="font-semibold">Past workflows</span> page.</li>
               </ol>
-              <p className="mt-4 text-sm text-slate-600 dark:text-white/70">Tip: You can keep the Start/Stop button visible while navigating between pages.</p>
+              <p className="mt-4 text-[0.925rem] text-slate-600 dark:text-white/70">Tip: You can keep the Start/Stop button visible while navigating between pages.</p>
             </GlassCard>
           </section>
         )}
@@ -302,7 +302,7 @@ export default function AgentWorkSessionUI() {
             <GlassCard>
               <div className="mb-4 flex items-center gap-2">
                 <History className="h-5 w-5" />
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white/90">Past workflows</h3>
+                <h3 className="text-[1.15rem] font-semibold text-slate-900 dark:text-white/90">Past workflows</h3>
               </div>
 
               <div className="divide-y divide-white/10">
@@ -317,8 +317,8 @@ export default function AgentWorkSessionUI() {
                           <Clock className="h-5 w-5 text-slate-800 dark:text-white/90" />
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.title}</div>
-                          <div className="mt-0.5 text-xs text-slate-600 dark:text-white/60">{started} → {ended}</div>
+                          <div className="truncate text-[0.925rem] font-semibold text-slate-900 dark:text-white">{s.title}</div>
+                          <div className="mt-0.5 text-[0.8rem] text-slate-600 dark:text-white/60">{started} → {ended}</div>
                         </div>
                       </div>
                       <Pill>{formatDuration(duration)}</Pill>
@@ -335,7 +335,7 @@ export default function AgentWorkSessionUI() {
             <div className="lg:col-span-1">
               <GlassCard>
                 <div>
-                  <div className="text-sm uppercase tracking-widest text-slate-600 dark:text-white/60">Current session</div>
+                  <div className="text-[0.925rem] uppercase tracking-widest text-slate-600 dark:text-white/60">Current session</div>
                   <div className="mt-2 text-4xl font-bold tabular-nums">{isActive ? elapsedText : "00:00:00"}</div>
                   <div className="mt-1 text-slate-600 dark:text-white/60">Use the Start/Stop button in the top-right.</div>
                 </div>
@@ -343,8 +343,8 @@ export default function AgentWorkSessionUI() {
             </div>
             <div className="lg:col-span-2">
               <GlassCard>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white/90">Notes</h3>
-                <p className="mt-2 text-sm text-slate-700 dark:text-white/70">Jot down anything relevant to your current flow here (optional). This is a placeholder—wire to your backend if needed.</p>
+                <h3 className="text-[1.15rem] font-semibold text-slate-900 dark:text-white/90">Notes</h3>
+                <p className="mt-2 text-[0.925rem] text-slate-700 dark:text-white/70">Jot down anything relevant to your current flow here (optional). This is a placeholder—wire to your backend if needed.</p>
               </GlassCard>
             </div>
           </section>
