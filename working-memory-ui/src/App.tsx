@@ -278,7 +278,7 @@ export default function AgentWorkSessionUI() {
                   return (
                     <div
                       key={s.id}
-                      className="py-3 flex items-center justify-between gap-3 cursor-pointer rounded-md hover:bg-slate-900/5 dark:hover:bg-white/5 transition-colors"
+                      className="py-3 flex items-center justify-between gap-3 cursor-pointer rounded-xl -mx-5 px-5 sm:-mx-7 sm:px-7 lg:-mx-9 lg:px-9 hover:bg-slate-900/5 dark:hover:bg-white/5 transition-colors"
                       onClick={() => { setSelectedSession(s); setPage("detail"); }}
                     >
                       <div className="flex items-center gap-3 min-w-0">
