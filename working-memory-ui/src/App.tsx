@@ -18,44 +18,7 @@ function formatDuration(ms: number) {
 }
 
 // ---------- Faux data ----------
-const seedSessions = [
-  {
-    id: "s-104",
-    title: "Deep work: sprint planning notes",
-    startedAt: Date.now() - 1000 * 60 * 60 * 4 - 1000 * 60 * 10,
-    endedAt: Date.now() - 1000 * 60 * 60 * 2 - 1000 * 60 * 37,
-    tags: ["docs", "planning"],
-    highlights: [
-      "Summarized stakeholder inputs",
-      "Auto-captured edits in Spec_v3.md",
-      "Generated task list",
-    ],
-  },
-  {
-    id: "s-103",
-    title: "Code focus: vector search POC",
-    startedAt: Date.now() - 1000 * 60 * 60 * 26,
-    endedAt: Date.now() - 1000 * 60 * 60 * 23 - 1000 * 60 * 12,
-    tags: ["coding", "prototype"],
-    highlights: [
-      "Benchmarked kNN top-k=50",
-      "Flagged memory spike in worker",
-      "Saved log snapshot",
-    ],
-  },
-  {
-    id: "s-102",
-    title: "Design review prep",
-    startedAt: Date.now() - 1000 * 60 * 60 * 48 - 1000 * 60 * 34,
-    endedAt: Date.now() - 1000 * 60 * 60 * 46 - 1000 * 60 * 2,
-    tags: ["design", "slides"],
-    highlights: [
-      "Drafted outline in slides",
-      "Pulled latest metrics",
-      "Generated talking points",
-    ],
-  },
-];
+const seedSessions: any[] = [];
 
 // ---------- Re-usable UI bits ----------
 const GlassCard: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ className, children }) => (
