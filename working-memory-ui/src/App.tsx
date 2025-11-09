@@ -68,6 +68,8 @@ export default function AgentWorkSessionUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [summaryNotes, setSummaryNotes] = useState("");
 
+  const [projectPath, setProjectPath] = useState<string | null>(null);
+
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return true;
     const saved = window.localStorage.getItem("wm-theme");
@@ -113,35 +115,58 @@ export default function AgentWorkSessionUI() {
     setSessionDescription("");
   };
 
-  const handleStart = () => {
-    if (isActive) return;
-    setIsActive(true);
-    const now = Date.now();
-    setStartAt(now);
-    setElapsed(0);
-    setSummaryNotes("");
+  const handleStart = async () => {
+    if (isActive || isLoading) return;
+
+    setIsLoading(true); // Start loading
+    setSummaryNotes(""); // Clear old summary
+
+    try {
+      // Call our new MCP Sensor (VS Code Extension)
+      console.log("Asking MCP Sensor for project path...");
+      const response = await fetch("http://127.0.0.1:12345/get-project-path");
+      const data = await response.json();
+
+      if (!data.project_path) {
+        throw new Error("No project folder is open in VS Code.");
+      }
+
+      const path = data.project_path;
+      console.log("MCP Sensor found path:", path);
+      
+      // --- SUCCESS ---
+      setProjectPath(path); // Save the path
+      setIsActive(true);    // Start the timer
+      const now = Date.now();
+      setStartAt(now);
+      setElapsed(0);
+
+    } catch (error) {
+      console.error("Failed to connect to MCP Sensor:", error);
+      alert("Error: Could not detect project. Is the 'mcp-sensor' extension running in VS Code?");
+    }
+
+    setIsLoading(false); // Stop loading
   };
 
   const handleStop = async () => {
-    if (!isActive || !startAt) return;
+    if (!isActive || !startAt || !projectPath) return; // Need a project path to stop
     
     setIsActive(false);
     setIsLoading(true);
     const endedAt = Date.now();
 
-    const project = "/Users/gary/Stuff/DummyProject";
-    const taskDescription = sessionDescription.trim();
-    const payload: { user_id: string; project_path: string; task_description?: string | null } = {
-        user_id: "garysun",
-        project_path: project,
+    // Use the Description box for the task, or null if it's empty
+    const taskDescription = sessionDescription.trim() || null;
+
+    const payload = {
+      user_id: "garysun",
+      project_path: projectPath, // <-- Use the dynamic path from state
+      task_description: taskDescription 
     };
 
-    if (taskDescription) {
-        payload.task_description = taskDescription;
-    }
-
     try {
-      console.log("Calling agent backend with payload:" + payload);
+      console.log("Calling agent backend with payload:", payload);
       
       const response = await axios.post(
         "http://127.0.0.1:8000/api/v1/workflow/end",
@@ -149,18 +174,23 @@ export default function AgentWorkSessionUI() {
       );
       
       console.log("Agent response:", response.data);
+
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
       const summary = response.data.summary_markdown;
+      const titleFromBackend = response.data.summary_title;
       
-      // --- Save the summary to our state
       setSummaryNotes(summary); 
       
-      // --- Create a new session for the UI
-      const title = sessionTitle.trim();
+      const title = sessionTitle.trim() ? sessionTitle.trim() : titleFromBackend;
+      
       const newSession = {
         id: `s-${Math.random().toString(36).slice(2, 7)}`,
         title,
         description: sessionDescription,
-        notes: summary, // --- Add the real summary here
+        notes: summary,
         startedAt: startAt,
         endedAt,
         tags: [],
@@ -174,29 +204,14 @@ export default function AgentWorkSessionUI() {
       setSummaryNotes(errorMsg);
       alert(errorMsg);
     }
-
+    
+    // --- Reset state
     setIsLoading(false);
     setStartAt(null);
     setElapsed(0);
     setSessionDescription("");
     setSessionTitle("");
-    // const title = sessionTitle.trim() ? sessionTitle.trim() : "Focused session";
-    // const newSession = {
-    //   id: `s-${Math.random().toString(36).slice(2, 7)}`,
-    //   title,
-    //   description: sessionDescription,
-    //   notes: "",
-    //   startedAt: startAt,
-    //   endedAt,
-    //   tags: [],
-    //   highlights: [],
-    // };
-    // setSessions((prev) => [newSession, ...prev]);
-    // setIsActive(false);
-    // setStartAt(null);
-    // setElapsed(0);
-    // setSessionDescription("");
-    // setSessionTitle("");
+    setProjectPath(null); // Clear the path
   };
 
   const elapsedText = useMemo(() => formatDuration(elapsed), [elapsed]);
