@@ -92,6 +92,8 @@ export default function AgentWorkSessionUI() {
     return () => clearInterval(id);
   }, [isActive, startAt]);
 
+  const canStart = !isActive;
+  const canStop = isActive;
 
   const deleteSession = (id: string) => {
     setSessions((prev) => prev.filter((s: any) => s.id !== id));
