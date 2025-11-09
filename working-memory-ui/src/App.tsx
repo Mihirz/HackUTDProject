@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Play, Square, Clock, History, Brain, Sun, Moon, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import axios from "axios";
 
-// ---------- Utility helpers ----------
+// Utility helpers
 function classNames(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
@@ -18,10 +18,9 @@ function formatDuration(ms: number) {
   return `${hh}:${mm}:${ss}`;
 }
 
-// ---------- Faux data ----------
 const seedSessions: any[] = [];
 
-// ---------- Re-usable UI bits ----------
+// Re-usable UI components
 const GlassCard: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ className, children }) => (
   <div
     className={classNames(
@@ -40,7 +39,6 @@ const Pill: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ class
     className={classNames(
       "inline-flex items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-semibold",
       "bg-slate-100 text-slate-800 ring-1 ring-slate-300",
-      // Dark mode: make pill darker than the card (no washed-out gray)
       "dark:bg-slate-900/60 dark:text-white dark:ring-white/20",
       className
     )}
@@ -49,7 +47,7 @@ const Pill: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ class
   </span>
 );
 
-// ---------- Main component ----------
+// Main component
 export default function AgentWorkSessionUI() {
   const [isActive, setIsActive] = useState(false);
   const [startAt, setStartAt] = useState<number | null>(null);
@@ -107,7 +105,6 @@ export default function AgentWorkSessionUI() {
 
   const handleCancel = () => {
     if (!isActive) return;
-    // Do not save a session; simply reset timers/state
     setIsActive(false);
     setStartAt(null);
     setElapsed(0);
@@ -118,11 +115,11 @@ export default function AgentWorkSessionUI() {
   const handleStart = async () => {
     if (isActive || isLoading) return;
 
-    setIsLoading(true); // Start loading
-    setSummaryNotes(""); // Clear old summary
+    setIsLoading(true);
+    setSummaryNotes("");
 
     try {
-      // Call our new MCP Sensor (VS Code Extension)
+      // Call MCP server
       console.log("Asking MCP Sensor for project path...");
       const response = await fetch("http://127.0.0.1:12345/get-project-path");
       const data = await response.json();
@@ -134,9 +131,8 @@ export default function AgentWorkSessionUI() {
       const path = data.project_path;
       console.log("MCP Sensor found path:", path);
       
-      // --- SUCCESS ---
-      setProjectPath(path); // Save the path
-      setIsActive(true);    // Start the timer
+      setProjectPath(path);
+      setIsActive(true);
       const now = Date.now();
       setStartAt(now);
       setElapsed(0);
@@ -146,22 +142,21 @@ export default function AgentWorkSessionUI() {
       alert("Error: Could not detect project. Is the 'mcp-sensor' extension running in VS Code?");
     }
 
-    setIsLoading(false); // Stop loading
+    setIsLoading(false);
   };
 
   const handleStop = async () => {
-    if (!isActive || !startAt || !projectPath) return; // Need a project path to stop
+    if (!isActive || !startAt || !projectPath) return;
     
     setIsActive(false);
     setIsLoading(true);
     const endedAt = Date.now();
 
-    // Use the Description box for the task, or null if it's empty
     const taskDescription = sessionDescription.trim() || null;
 
     const payload = {
       user_id: "garysun",
-      project_path: projectPath, // <-- Use the dynamic path from state
+      project_path: projectPath,
       task_description: taskDescription 
     };
 
@@ -205,18 +200,18 @@ export default function AgentWorkSessionUI() {
       alert(errorMsg);
     }
     
-    // --- Reset state
+    // Reset state
     setIsLoading(false);
     setStartAt(null);
     setElapsed(0);
     setSessionDescription("");
     setSessionTitle("");
-    setProjectPath(null); // Clear the path
+    setProjectPath(null);
   };
 
   const elapsedText = useMemo(() => formatDuration(elapsed), [elapsed]);
 
-  // Choose the month to display: latest session's month or current month, then apply offset
+  // Month display
   const baseDate = useMemo(() => {
     if (!sessions || sessions.length === 0) return new Date();
     const latest = [...sessions].sort((a: any, b: any) => b.startedAt - a.startedAt)[0].startedAt;
@@ -231,10 +226,10 @@ export default function AgentWorkSessionUI() {
   }, [baseDate, monthOffset]);
 
   const year = displayDate.getFullYear();
-  const month = displayDate.getMonth(); // 0-indexed
+  const month = displayDate.getMonth();
 
   const daysInMonth = useMemo(() => new Date(year, month + 1, 0).getDate(), [year, month]);
-  const firstDayIdx = useMemo(() => new Date(year, month, 1).getDay(), [year, month]); // 0=Sun
+  const firstDayIdx = useMemo(() => new Date(year, month, 1).getDay(), [year, month]); // 0 = Sunday
 
   const sessionsByDay = useMemo(() => {
     const map: Record<string, any[]> = {};
@@ -353,7 +348,7 @@ export default function AgentWorkSessionUI() {
           </div>
         </div>
 
-        {/* Mobile nav (optional minimal) */}
+        {/* Mobile nav */}
         <div className="mx-auto flex max-w-6xl items-center justify-center gap-2 px-6 pb-3 md:hidden">
           <button
             onClick={() => setPage("about")}
