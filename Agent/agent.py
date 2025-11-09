@@ -2,10 +2,7 @@ import os
 from agents import Agent, OpenAIChatCompletionsModel
 from openai import AsyncOpenAI
 
-# We don't need the tool here anymore, main.py imports it.
-# from tools import get_git_diff 
-
-# 1. CREATE THE ASYNC OPENAI CLIENT
+# 1. CREATE THE ASYNC OPENAI CLIENT (No changes here)
 client = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
     base_url=os.getenv("OPENAI_BASE_URL"),
@@ -15,34 +12,38 @@ client = AsyncOpenAI(
     }
 )
 
-# 2. CONFIGURE THE MODEL
+# 2. CONFIGURE THE MODEL (No changes here)
 llm_model = OpenAIChatCompletionsModel(
     model=os.getenv("AGENT_MODEL", "mistralai/mistral-7b-instruct"),
     openai_client=client
 )
 
 # 3. Define the agent's instructions (the System Prompt)
-#    vvv THIS IS THE FIX vvv
+#    vvv THIS IS THE NEW PROMPT vvv
 SYSTEM_PROMPT = """
-You are an expert "Context Re-Entry" agent. You will be given a "Task" description 
-from a user and a "Git Diff" showing their work.
+You are an expert "Context Re-Entry" agent. You will be given a "Git Status Report" 
+showing a developer's file changes.
 
-Your ONLY job is to combine these two pieces of information and generate a 
-comprehensive summary in Markdown format.
+Your job is to *analyze* this file list and *infer* what task the developer was
+performing.
+
+Based on your inference, generate a comprehensive summary in Markdown format.
+
+The Git Status Report is a list of files:
+- Files starting with ' M' are Modified.
+- Files starting with '??' are Untracked (new).
 
 The summary MUST include:
-- A high-level title.
-- A "Summary" section of what was done.
-- A "Key Changes" section (use bullet points based on the diff).
-- A "Suggested Next Steps" section (e.g., "run tests", "commit changes", "push branch").
+- A high-level title (e.g., "Refactoring the Agent Logic").
+- A "Summary" section describing the *inferred task* (e.g., "It looks like you were refactoring the main agent workflow and git tools.").
+- A "Key Files Changed" section (use bullet points from the list).
+- A "Suggested Next Steps" section (e.g., "commit changes", "push branch").
 """
-#    ^^^ THIS IS THE FIX ^^^
+#    ^^^ THIS IS THE NEW PROMPT ^^^
 
 # 4. Create the agent
 context_agent = Agent(
     name="ContextAgent",
     instructions=SYSTEM_PROMPT,
-    # The agent itself no longer needs the tool, since main.py is calling it.
-    # tools=[get_git_diff], 
     model=llm_model,
 )
