@@ -34,7 +34,7 @@ const GlassCard: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ 
     <div className="relative">{children}</div>
   </div>
 );
-const Pill: React.FC<React.PropsWithChildren<{ glow?: boolean; className?: string }>> = ({ glow, className, children }) => (
+const Pill: React.FC<React.PropsWithChildren<{ className?: string }>> = ({ className, children }) => (
   <span
     className={classNames(
       "inline-flex items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-semibold",
@@ -88,8 +88,6 @@ export default function AgentWorkSessionUI() {
     return () => clearInterval(id);
   }, [isActive, startAt]);
 
-  const canStart = !isActive;
-  const canStop = isActive;
 
   const deleteSession = (id: string) => {
     setSessions((prev) => prev.filter((s: any) => s.id !== id));
