@@ -105,6 +105,7 @@ export default function AgentWorkSessionUI() {
     setIsActive(false);
     setStartAt(null);
     setElapsed(0);
+    setSessionTitle("");
   };
 
   const handleStart = () => {
@@ -133,6 +134,7 @@ export default function AgentWorkSessionUI() {
     setStartAt(null);
     setElapsed(0);
     setSessionDescription("");
+    setSessionTitle("");
   };
 
   const elapsedText = useMemo(() => formatDuration(elapsed), [elapsed]);
@@ -647,6 +649,14 @@ export default function AgentWorkSessionUI() {
                   className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
                   rows={8}
                 />
+
+                {/* Notes (read-only preview, matches detail page position) */}
+                <div className="mt-6">
+                  <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Notes</label>
+                  <div className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white">
+                    <span className="text-slate-500 dark:text-white/50">Notes will auto‑populate when you stop the session.</span>
+                  </div>
+                </div>
               </GlassCard>
             </div>
           </section>
