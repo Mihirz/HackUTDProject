@@ -463,7 +463,7 @@ export default function AgentWorkSessionUI() {
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-900/5 dark:text-white/80 dark:hover:text-white dark:hover:bg-white/5"
               )}
             >
-              Past workflows
+              Past Workflows
             </button>
             <button
               onClick={() => setPage("flow")}
@@ -566,11 +566,21 @@ export default function AgentWorkSessionUI() {
             <GlassCard>
               <h2 className="text-[1.35rem] font-semibold text-slate-900 dark:text-white/90">About Working Memory</h2>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-[0.925rem] text-slate-700 dark:text-white/85">
-                <li>Click <span className="font-semibold">Start</span> in the top-right to begin a focused session.</li>
-                <li>Work as usual. The timer keeps running; click <span className="font-semibold">Stop</span> when you’re done.</li>
-                <li>Review your saved sessions on the <span className="font-semibold">Past workflows</span> page.</li>
+                <li>
+                  <span className="font-semibold">Click Start:</span> Begin a new session.
+                </li>
+                <li>
+                  <span className="font-semibold">Work as Usual:</span> Code in your local project.
+                </li>
+                <li>
+                  <span className="font-semibold">Click Stop:</span> When you're done, the agentic workflow activates.
+                  <ul className="list-disc space-y-1 pl-5 mt-2">
+                    <li>All modified and newly created files are scanned.</li>
+                    <li>This changelog is fed to an AI data processing pipeline to generate a high-level overview and actionable insights.</li>
+                    <li>Summaries are saved to your Past Workflows page, creating a complete, searchable history of your progress.</li>
+                  </ul>
+                </li>
               </ol>
-              <p className="mt-4 text-[0.925rem] text-slate-600 dark:text-white/70">Tip: You can keep the Start/Stop button visible while navigating between pages.</p>
             </GlassCard>
           </section>
         )}
@@ -581,7 +591,7 @@ export default function AgentWorkSessionUI() {
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <History className="h-5 w-5" />
-                  <h3 className="text-[1.15rem] font-semibold text-slate-900 dark:text-white/90 mr-2">Past workflows</h3>
+                  <h3 className="text-[1.15rem] font-semibold text-slate-900 dark:text-white/90 mr-2">Past Workflows</h3>
                   {/* Search */}
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <input
@@ -917,14 +927,22 @@ export default function AgentWorkSessionUI() {
         )}
 
         {page === "flow" && (
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-1">
+          <section className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+            {/* Left side: timer, name, description */}
+            <div className="lg:col-span-2">
               <GlassCard>
                 <div>
-                  <div className="text-[0.925rem] uppercase tracking-widest text-slate-600 dark:text-white/60">Current session</div>
-                  <div className="mt-2 text-4xl font-bold tabular-nums">{isActive ? elapsedText : "00:00:00"}</div>
+                  <div className="text-[0.925rem] uppercase tracking-widest text-slate-600 dark:text-white/60">
+                    Current session
+                  </div>
+                  <div className="mt-2 text-4xl font-bold tabular-nums">
+                    {isActive ? elapsedText : "00:00:00"}
+                  </div>
 
-                  <label className="mt-4 block text-[0.8rem] text-slate-600 dark:text-white/60">Session name</label>
+                  {/* Session name */}
+                  <label className="mt-4 block text-[0.8rem] text-slate-600 dark:text-white/60">
+                    Session name
+                  </label>
                   <input
                     value={sessionTitle}
                     onChange={(e) => setSessionTitle(e.target.value)}
@@ -932,7 +950,23 @@ export default function AgentWorkSessionUI() {
                     className="mt-1 w-full rounded-md border border-slate-300 bg-white/70 px-3 py-2 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
                   />
 
-                  <div className="mt-2 text-slate-600 dark:text-white/60">Use the Start/Stop button in the top-right.</div>
+                  {/* Description now directly under session name */}
+                  <label className="mt-4 block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={sessionDescription}
+                    onChange={(e) => setSessionDescription(e.target.value)}
+                    disabled={!isActive}
+                    placeholder="Describe this session… (optional)"
+                    className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
+                    rows={6}
+                  />
+
+                  <div className="mt-2 text-slate-600 dark:text-white/60">
+                    Use the Start/Stop button to manage this session.
+                  </div>
+
                   {isActive && (
                     <div className="mt-4">
                       <button
@@ -947,30 +981,23 @@ export default function AgentWorkSessionUI() {
                 </div>
               </GlassCard>
             </div>
-            <div className="lg:col-span-2">
-              <GlassCard>
-                <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Description</label>
-                <textarea
-                  value={sessionDescription}
-                  onChange={(e) => setSessionDescription(e.target.value)}
-                  disabled={!isActive}
-                  placeholder="Describe this session… (optional)"
-                  className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
-                  rows={8}
-                />
 
-                {/* Notes (read-only preview, matches detail page position) */}
-                <div className="mt-6">
-                  <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Notes</label>
-                  <div className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white whitespace-pre-wrap">
-                    {summaryNotes ? (
-                      summaryNotes
-                    ) : (
-                      <span className="text-slate-500 dark:text-white/50">
-                        {isLoading ? "Agent is generating summary..." : "Notes will auto‑populate when you stop the session."}
-                      </span>
-                    )}
-                  </div>
+            {/* Right side: Notes only */}
+            <div className="lg:col-span-3">
+              <GlassCard>
+                <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">
+                  Notes
+                </label>
+                <div className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white whitespace-pre-wrap">
+                  {summaryNotes ? (
+                    summaryNotes
+                  ) : (
+                    <span className="text-slate-500 dark:text-white/50">
+                      {isLoading
+                        ? "Agent is generating summary..."
+                        : "Notes will auto-populate when you stop the session."}
+                    </span>
+                  )}
                 </div>
               </GlassCard>
             </div>
