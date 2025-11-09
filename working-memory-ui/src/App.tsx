@@ -53,6 +53,7 @@ export default function AgentWorkSessionUI() {
   const [isActive, setIsActive] = useState(false);
   const [startAt, setStartAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [sessionTitle, setSessionTitle] = useState("Focused session");
 
   const [sessions, setSessions] = useState(seedSessions);
   const [page, setPage] = useState<"about" | "workflows" | "flow" | "detail" | "day">("flow");
@@ -102,7 +103,7 @@ export default function AgentWorkSessionUI() {
     const endedAt = Date.now();
     const newSession = {
       id: `s-${Math.random().toString(36).slice(2, 7)}`,
-      title: "Focused session",
+      title: sessionTitle,
       description: "",
       startedAt: startAt,
       endedAt,
@@ -481,7 +482,16 @@ export default function AgentWorkSessionUI() {
           <section className="space-y-6">
             <GlassCard>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-[1.35rem] font-semibold text-slate-900 dark:text-white/90">{selectedSession.title || "Workflow"}</h2>
+                <input
+                  value={selectedSession.title || ""}
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    setSelectedSession({ ...selectedSession, title: t });
+                    setSessions((prev) => prev.map((s) => (s.id === selectedSession.id ? { ...s, title: t } : s)));
+                  }}
+                  placeholder="Session title"
+                  className="w-full max-w-md rounded-md border border-slate-300 bg-white/70 px-3 py-2 text-[0.925rem] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                />
                 <button
                   onClick={() => {
                     if (backTarget?.page === 'day') {
@@ -548,7 +558,16 @@ export default function AgentWorkSessionUI() {
                 <div>
                   <div className="text-[0.925rem] uppercase tracking-widest text-slate-600 dark:text-white/60">Current session</div>
                   <div className="mt-2 text-4xl font-bold tabular-nums">{isActive ? elapsedText : "00:00:00"}</div>
-                  <div className="mt-1 text-slate-600 dark:text-white/60">Use the Start/Stop button in the top-right.</div>
+
+                  <label className="mt-4 block text-[0.8rem] text-slate-600 dark:text-white/60">Session name</label>
+                  <input
+                    value={sessionTitle}
+                    onChange={(e) => setSessionTitle(e.target.value)}
+                    placeholder="Focused session"
+                    className="mt-1 w-full rounded-md border border-slate-300 bg-white/70 px-3 py-2 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
+                  />
+
+                  <div className="mt-2 text-slate-600 dark:text-white/60">Use the Start/Stop button in the top-right.</div>
                 </div>
               </GlassCard>
             </div>
