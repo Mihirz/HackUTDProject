@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Play, Square, Clock, History, Brain, Sun, Moon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Square, Clock, History, Brain, Sun, Moon, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 
 // ---------- Utility helpers ----------
 function classNames(...classes: (string | boolean | undefined)[]) {
@@ -54,6 +54,7 @@ export default function AgentWorkSessionUI() {
   const [startAt, setStartAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [sessionTitle, setSessionTitle] = useState("Focused session");
+  const [sessionDescription, setSessionDescription] = useState("");
 
   const [sessions, setSessions] = useState(seedSessions);
   const [page, setPage] = useState<"about" | "workflows" | "flow" | "detail" | "day">("flow");
@@ -90,6 +91,22 @@ export default function AgentWorkSessionUI() {
   const canStart = !isActive;
   const canStop = isActive;
 
+  const deleteSession = (id: string) => {
+    setSessions((prev) => prev.filter((s: any) => s.id !== id));
+    if (selectedSession && selectedSession.id === id) {
+      setSelectedSession(null);
+      setPage("workflows");
+    }
+  };
+
+  const handleCancel = () => {
+    if (!isActive) return;
+    // Do not save a session; simply reset timers/state
+    setIsActive(false);
+    setStartAt(null);
+    setElapsed(0);
+  };
+
   const handleStart = () => {
     if (isActive) return;
     setIsActive(true);
@@ -104,7 +121,8 @@ export default function AgentWorkSessionUI() {
     const newSession = {
       id: `s-${Math.random().toString(36).slice(2, 7)}`,
       title: sessionTitle,
-      description: "",
+      description: sessionDescription,
+      notes: "",
       startedAt: startAt,
       endedAt,
       tags: [],
@@ -114,6 +132,7 @@ export default function AgentWorkSessionUI() {
     setIsActive(false);
     setStartAt(null);
     setElapsed(0);
+    setSessionDescription("");
   };
 
   const elapsedText = useMemo(() => formatDuration(elapsed), [elapsed]);
@@ -353,7 +372,17 @@ export default function AgentWorkSessionUI() {
                             <div className="mt-0.5 text-[0.8rem] text-slate-600 dark:text-white/60">{started} → {ended}</div>
                           </div>
                         </div>
-                        <Pill>{formatDuration(duration)}</Pill>
+                        <div className="flex items-center gap-2">
+                          <Pill>{formatDuration(duration)}</Pill>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
+                            aria-label="Delete session"
+                            title="Delete session"
+                            className="inline-flex items-center justify-center rounded-md p-2 ring-1 ring-rose-300/40 bg-rose-600/90 text-white hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300/60"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -465,7 +494,17 @@ export default function AgentWorkSessionUI() {
                           <div className="mt-0.5 text-[0.8rem] text-slate-600 dark:text-white/60">{started} → {ended}</div>
                         </div>
                       </div>
-                      <Pill>{formatDuration(duration)}</Pill>
+                      <div className="flex items-center gap-2">
+                        <Pill>{formatDuration(duration)}</Pill>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
+                          aria-label="Delete session"
+                          title="Delete session"
+                          className="inline-flex items-center justify-center rounded-md p-2 ring-1 ring-rose-300/40 bg-rose-600/90 text-white hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300/60"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -536,16 +575,32 @@ export default function AgentWorkSessionUI() {
                 </div>
               </div>
 
-              {/* Description box (backend-pluggable) */}
+              {/* Description (user-editable) */}
               <div className="mt-6">
                 <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Description</label>
                 <textarea
                   value={selectedSession.description ?? ""}
-                  onChange={(e) => setSelectedSession({ ...selectedSession, description: e.target.value })}
-                  placeholder="Description of this workflow… (backend can persist this)"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedSession({ ...selectedSession, description: val });
+                    setSessions((prev) => prev.map((s) => (s.id === selectedSession.id ? { ...s, description: val } : s)));
+                  }}
+                  placeholder="Describe this workflow…"
                   className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
                   rows={6}
                 />
+              </div>
+
+              {/* Notes (backend-managed, read-only) */}
+              <div className="mt-6">
+                <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Notes</label>
+                <div className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white whitespace-pre-wrap">
+                  {selectedSession.notes && String(selectedSession.notes).trim().length > 0 ? (
+                    selectedSession.notes
+                  ) : (
+                    <span className="text-slate-500 dark:text-white/50">No notes yet. (Provided by backend)</span>
+                  )}
+                </div>
               </div>
             </GlassCard>
           </section>
@@ -568,13 +623,30 @@ export default function AgentWorkSessionUI() {
                   />
 
                   <div className="mt-2 text-slate-600 dark:text-white/60">Use the Start/Stop button in the top-right.</div>
+                  {isActive && (
+                    <div className="mt-4">
+                      <button
+                        onClick={handleCancel}
+                        className="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-semibold text-white bg-gradient-to-b from-rose-600 to-rose-700 ring-1 ring-rose-300/40 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-rose-300/60"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete Session
+                      </button>
+                    </div>
+                  )}
                 </div>
               </GlassCard>
             </div>
             <div className="lg:col-span-2">
               <GlassCard>
-                <h3 className="text-[1.15rem] font-semibold text-slate-900 dark:text-white/90">Notes</h3>
-                <p className="mt-2 text-[0.925rem] text-slate-700 dark:text-white/70">Jot down anything relevant to your current flow here (optional). This is a placeholder—wire to your backend if needed.</p>
+                <label className="block text-[0.8rem] text-slate-600 dark:text-white/60 mb-2">Description</label>
+                <textarea
+                  value={sessionDescription}
+                  onChange={(e) => setSessionDescription(e.target.value)}
+                  placeholder="Describe this session… (optional)"
+                  className="w-full rounded-lg border border-slate-300 bg-white/70 p-3 text-[0.925rem] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus:ring-indigo-300"
+                  rows={8}
+                />
               </GlassCard>
             </div>
           </section>
