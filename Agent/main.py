@@ -103,7 +103,6 @@ async def handle_workflow_end(request: WorkflowEndRequest):
             completion = await client.chat.completions.create(
                 model=os.getenv("AGENT_MODEL"),
                 messages=final_prompt_messages,
-                max_tokens=1024,
             )
             
             summary_markdown = completion.choices[0].message.content
@@ -114,7 +113,7 @@ async def handle_workflow_end(request: WorkflowEndRequest):
             else:
                 print(f"[Agent Warning] LLM returned an empty/short summary. Retrying...")
                 # print(json.dumps(final_prompt_messages, indent=2))
-                print(git_diff)
+                # print(git_diff)
             
             i += 1
         
@@ -127,7 +126,7 @@ async def handle_workflow_end(request: WorkflowEndRequest):
 
         return {
             "summary_title": request.task_description or "Automated Context Summary",
-            "summary_markdown": summary_markdown
+            "summary_markdown": summary_markdown + "\n\n" + git_diff + "\n" + "- Files starting with ' M' are modified.\n- Files starting with '??' are newly created"
         }
 
     except Exception as e:
