@@ -22,6 +22,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
@@ -41,7 +42,9 @@ class HeartbeatRequest(BaseModel):
 
 class WorkflowEndRequest(BaseModel):
     user_id: str
-    task_description: str
+    # vvv THIS IS THE FIX vvv
+    task_description: str | None = None  # Make task_description optional
+    # ^^^ THIS IS THE FIX ^^^
     project_path: str
 
 # --- 3. API Endpoints ---
@@ -60,37 +63,56 @@ async def handle_workflow_end(request: WorkflowEndRequest):
     """
     This is the main agentic workflow, now implemented manually.
     """
-    print(f"[Workflow End] Starting summary for: {request.task_description}")
+    print(f"[Workflow End] Starting summary for project: {request.project_path}")
     
     try:
         # --- 1. Manually call our tool ---
         print("[Agent] Calling tool: get_git_diff")
-        
-        # vvv THIS IS THE FIX vvv
-        # We can now call our tool like a normal async function.
         git_diff = await get_git_diff(request.project_path)
-        # ^^^ THIS IS THE FIX ^^^
-        
         print("[Agent] Tool returned.")
 
         # --- 2. Manually format the prompt for the LLM ---
-        final_prompt_messages = [
-            {"role": "system", "content": context_agent.instructions}, # Get instructions from our agent
-            {"role": "user", "content": f"Task: {request.task_description}\n\nGit Diff:\n{git_diff}"}
-        ]
-
-        # --- 3. Manually call the LLM using our working client ---
-        print("[Agent] Calling LLM for final summary...")
-        completion = await client.chat.completions.create(
-            model=os.getenv("AGENT_MODEL"),
-            messages=final_prompt_messages
-        )
         
-        summary_markdown = completion.choices[0].message.content
-        print(f"[Agent Result] Summary generated.")
+        # vvv THIS IS THE FIX vvv
+        # We build the prompt differently if task_description is missing
+        user_prompt_content = ""
+        if request.task_description:
+            # If we HAVE a description, use it (like before)
+            user_prompt_content = f"Task: {request.task_description}\n\nGit Status Report:\n{git_diff}"
+        else:
+            # If we DON'T, just send the report
+            user_prompt_content = f"Git Status Report:\n{git_diff}"
+        
+        final_prompt_messages = [
+            {"role": "system", "content": context_agent.instructions},
+            {"role": "user", "content": user_prompt_content}
+        ]
+        # ^^^ THIS IS THE FIX ^^^
+
+        # --- 3. Manually call the LLM (with retries) ---
+        summary_markdown = ""
+        for i in range(5):
+            print(f"[Agent] Calling LLM for final summary (Attempt {i+1}/5)...")
+            completion = await client.chat.completions.create(
+                model=os.getenv("AGENT_MODEL"),
+                messages=final_prompt_messages,
+                max_tokens=1024,
+            )
+            
+            summary_markdown = completion.choices[0].message.content
+            
+            if summary_markdown and len(summary_markdown.strip()) > 10:
+                print(f"[Agent Result] Summary generated on attempt {i+1}.")
+                break
+            else:
+                print(f"[Agent Warning] LLM returned an empty/short summary. Retrying...")
+        
+        if not summary_markdown or not summary_markdown.strip():
+            print("[Agent Error] LLM failed to generate a summary after 5 attempts.")
+            return {"error": "LLM failed to generate summary, please try again."}, 500
 
         return {
-            "summary_title": request.task_description,
+            "summary_title": request.task_description or "Automated Context Summary", # Use a generic title
             "summary_markdown": summary_markdown
         }
 

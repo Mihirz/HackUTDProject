@@ -1,15 +1,15 @@
 import asyncio
-import subprocess  # <-- We are using subprocess, not GitPython
+import subprocess  # We are still using subprocess
 
 async def get_git_diff(workspace_path: str) -> str:
     """
-    Gets all uncommitted (staged and unstaged) git diffs from
-    the specified local repository path using a subprocess.
+    Gets the project status using 'git status --porcelain',
+    which includes staged, unstaged, AND untracked files.
     
     Args:
         workspace_path: The absolute file path to the local git repository.
     """
-    print(f"[Tool] get_git_diff called with path: {workspace_path}")
+    print(f"[Tool] get_git_status called with path: {workspace_path}")
     
     if not workspace_path:
         return "Error: No workspace_path provided."
@@ -17,38 +17,25 @@ async def get_git_diff(workspace_path: str) -> str:
     def run_git_operations():
         # This is the synchronous code that will run in a thread
         try:
-            # 1. Get unstaged changes
-            unstaged_result = subprocess.run(
-                ["git", "-C", workspace_path, "diff"],
+            # Use 'git status --porcelain' to get a simple list
+            # of all changed files, including untracked ones.
+            result = subprocess.run(
+                ["git", "-C", workspace_path, "status", "--porcelain"],
                 capture_output=True, text=True, check=True
             )
             
-            # 2. Get staged changes
-            staged_result = subprocess.run(
-                ["git", "-C", workspace_path, "diff", "--staged"],
-                capture_output=True, text=True, check=True
-            )
+            if not result.stdout:
+                return "No changes (staged, unstaged, or untracked) found."
             
-            full_diff = ""
-            if unstaged_result.stdout:
-                full_diff += f"--- UNSTAGED CHANGES ---\n{unstaged_result.stdout}\n"
-            if staged_result.stdout:
-                full_diff += f"--- STAGED CHANGES ---\n{staged_result.stdout}\n"
-
-            if not full_diff:
-                return "No uncommitted changes (staged or unstaged) found."
-            
-            print("[Tool] Returning REAL git diff.")
-            return full_diff
+            print("[Tool] Returning REAL git status.")
+            # We wrap the output for clarity for the LLM
+            return f"--- GIT STATUS REPORT ---\n{result.stdout}"
 
         except subprocess.CalledProcessError as e:
-            return f"Error running git diff: {e.stderr}"
-        except FileNotFoundError:
-            return "Error: 'git' command not found. Is it installed and in your system PATH?"
+            # This can happen if the directory isn't a git repo
+            return f"Error running git status: {e.stderr}"
         except Exception as e:
             return f"An unexpected error occurred: {str(e)}"
 
     # Run the blocking subprocess calls in a separate thread
     return await asyncio.to_thread(run_git_operations)
-
-# what is going on
